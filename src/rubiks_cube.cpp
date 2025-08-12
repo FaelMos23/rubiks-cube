@@ -197,6 +197,122 @@ public:
         sides[0][1][0] = buffer[0];
         sides[0][1][1] = buffer[1];
     }
+
+    void rot5() // rotate top clockwise
+    {
+        // rotation
+        int buffer[N];
+        buffer[0] = sides[1][0][0];
+        buffer[1] = sides[1][0][1];
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][0][1]);
+
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][0][1]);
+
+        swap(buffer[0], sides[5][0][0]);
+        swap(buffer[1], sides[5][0][1]);
+
+        sides[1][0][0] = buffer[0];
+        sides[1][0][1] = buffer[1];
+
+        // translation
+        // buffer[0] = sides[0][0][0];
+
+        // swap(buffer[0], sides[0][1][0]);
+        // swap(buffer[0], sides[0][1][1]);
+        // swap(buffer[0], sides[0][0][1]);
+
+        // sides[0][0][0] = buffer[0];
+    }
+
+    void rot5i() // rotate top counterclockwise
+    {
+        // rotation
+        int buffer[N];
+        buffer[0] = sides[1][0][0];
+        buffer[1] = sides[1][0][1];
+
+        swap(buffer[0], sides[5][0][0]);
+        swap(buffer[1], sides[5][0][1]);
+
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][0][1]);
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][0][1]);
+
+        sides[1][0][0] = buffer[0];
+        sides[1][0][1] = buffer[1];
+
+        // translation
+        // buffer[0] = sides[0][0][0];
+
+        // swap(buffer[0], sides[0][0][1]);
+        // swap(buffer[0], sides[0][1][1]);
+        // swap(buffer[0], sides[0][1][0]);
+
+        // sides[0][0][0] = buffer[0];
+    }
+
+    void rot6() // rotate bottom clockwise
+    {
+        // rotation
+        int buffer[N];
+        buffer[0] = sides[1][1][0];
+        buffer[1] = sides[1][1][1];
+
+        swap(buffer[0], sides[2][1][0]);
+        swap(buffer[1], sides[2][1][1]);
+
+        swap(buffer[0], sides[3][1][0]);
+        swap(buffer[1], sides[3][1][1]);
+
+        swap(buffer[0], sides[5][1][0]);
+        swap(buffer[1], sides[5][1][1]);
+
+        // translation
+        sides[1][1][0] = buffer[0];
+        sides[1][1][1] = buffer[1];
+
+        buffer[0] = sides[4][0][0];
+
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[0], sides[4][1][1]);
+        swap(buffer[0], sides[4][1][0]);
+
+        sides[4][0][0] = buffer[0];
+    }
+
+    void rot6i() // rotate bottom counterclockwise
+    {
+        // rotation
+        int buffer[N];
+        buffer[0] = sides[1][1][0];
+        buffer[1] = sides[1][1][1];
+
+        swap(buffer[0], sides[5][1][0]);
+        swap(buffer[1], sides[5][1][1]);
+
+        swap(buffer[0], sides[3][1][0]);
+        swap(buffer[1], sides[3][1][1]);
+
+        swap(buffer[0], sides[2][1][0]);
+        swap(buffer[1], sides[2][1][1]);
+
+        sides[1][1][0] = buffer[0];
+        sides[1][1][1] = buffer[1];
+
+        // translation
+        // buffer[0] = sides[4][0][0];
+
+        // swap(buffer[0], sides[4][1][0]);
+        // swap(buffer[0], sides[4][1][1]);
+        // swap(buffer[0], sides[4][0][1]);
+
+        // sides[4][0][0] = buffer[0];
+    }
 };
 
 int main()
@@ -211,7 +327,13 @@ int main()
          << endl;
     c.print_cube();
 
-    c.rot4i();
+    c.rot6();
+
+    cout << "\n"
+         << endl;
+    c.print_cube();
+
+    c.rot5i();
 
     cout << "\n"
          << endl;
