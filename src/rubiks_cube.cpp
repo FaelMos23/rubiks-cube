@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <list>
 #define N 2
 using namespace std;
 
@@ -34,7 +35,8 @@ class Cube {
 
     // methods
     // direct 2x2 print, will make it better later
-    void print_cube(){
+    void print_cube()
+    {
         cout << "  "                                                                << int_to_string(sides[0][0][0]) << int_to_string(sides[0][0][1]) << endl;
         cout << "  "                                                                << int_to_string(sides[0][1][0]) << int_to_string(sides[0][1][1]) << endl;
         cout << int_to_string(sides[1][0][0]) << int_to_string(sides[1][0][1]) << int_to_string(sides[2][0][0]) << int_to_string(sides[2][0][1]) << int_to_string(sides[3][0][0]) << int_to_string(sides[3][0][1]) << endl;
@@ -43,6 +45,24 @@ class Cube {
         cout << "  "                                                                << int_to_string(sides[4][1][0]) << int_to_string(sides[4][1][1]) << endl;
         cout << "  "                                                                << int_to_string(sides[5][0][0]) << int_to_string(sides[5][0][1]) << endl;
         cout << "  "                                                                << int_to_string(sides[5][1][0]) << int_to_string(sides[5][1][1]) << endl;
+    }
+
+    bool is_solved()
+    {
+        int i, j, k;
+
+        for(i=0; i<5; i++) // 0-4 because if 5 sides are correct, the last one has to be correct too
+        {
+            if(sides[i][0][0] != sides[i][0][1] || 
+               sides[i][0][0] != sides[i][1][0] || 
+               sides[i][0][0] != sides[i][1][1] || 
+               sides[i][0][1] != sides[i][1][0] || 
+               sides[i][0][1] != sides[i][1][1] || 
+               sides[i][1][0] != sides[i][1][1])
+                return false;
+        }
+        
+        return true;
     }
 
     void rot1()
@@ -59,6 +79,37 @@ class Cube {
         sides[0][0][0] = buffer[0]; sides[0][0][1] = buffer[1];
     }
 };
+
+
+void AI_loop(Cube initial) 
+{
+    // add initial state on structure
+    list<Cube> pastStates;
+    list<Cube> processing;
+    processing.push_back(initial);
+
+    // while structure is not empty
+    while(!processing.empty())
+    {
+        Cube currState = processing.front();
+        // if (solved state)
+        if(currState.is_solved())
+        {
+            // print solution
+            currState.print_cube();
+            // return;
+            return;
+        }
+        // analysing function()
+        CHOSEN_METHOD(processing, pastStates);
+        // depth first search
+        // breadth first search
+        // A*
+    }
+
+    //return; no solution possible
+}
+
 
 int main() {
     
