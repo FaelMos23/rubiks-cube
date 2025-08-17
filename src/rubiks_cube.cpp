@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <chrono>
+#include <random>
 #define N 2
 using namespace std;
 
@@ -45,6 +47,8 @@ public:
         cout << "  " << int_to_string(sides[5][0][0]) << int_to_string(sides[5][0][1]) << endl;
         cout << "  " << int_to_string(sides[5][1][0]) << int_to_string(sides[5][1][1]) << endl;
     }
+
+    // rotation methods
 
     void rot1() // rotate behind clockwise
     {
@@ -104,36 +108,7 @@ public:
         sides[5][1][0] = buffer[0];
     }
 
-    void rot2() // rotate right clockwise RENAME
-    {
-        int buffer[N];
-        buffer[0] = sides[0][0][1];
-        buffer[1] = sides[0][1][1];
-
-        swap(buffer[0], sides[2][0][1]);
-        swap(buffer[1], sides[2][1][1]);
-
-        swap(buffer[0], sides[4][0][1]);
-        swap(buffer[1], sides[4][1][1]);
-
-        swap(buffer[0], sides[5][1][0]);
-        swap(buffer[1], sides[5][0][0]);
-
-        sides[0][0][1] = buffer[0];
-        sides[0][1][1] = buffer[1];
-
-        // translation
-
-        buffer[0] = sides[3][0][0];
-
-        swap(buffer[0], sides[3][1][0]);
-        swap(buffer[0], sides[3][1][1]);
-        swap(buffer[0], sides[3][0][1]);
-
-        sides[3][0][0] = buffer[0];
-    }
-
-    void rot2i() // rotate right counterclockwise RENAME
+    void rot2() // rotate right clockwise
     {
         int buffer[N];
         buffer[0] = sides[0][0][1];
@@ -162,36 +137,36 @@ public:
         sides[3][0][0] = buffer[0];
     }
 
-    void rot3() // rotate left clockwise RENAME
+    void rot2i() // rotate right counterclockwise
     {
         int buffer[N];
-        buffer[0] = sides[0][0][0];
-        buffer[1] = sides[0][1][0];
+        buffer[0] = sides[0][0][1];
+        buffer[1] = sides[0][1][1];
 
-        swap(buffer[0], sides[2][0][0]);
-        swap(buffer[1], sides[2][1][0]);
+        swap(buffer[0], sides[2][0][1]);
+        swap(buffer[1], sides[2][1][1]);
 
-        swap(buffer[0], sides[4][0][0]);
-        swap(buffer[1], sides[4][1][0]);
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][1][1]);
 
-        swap(buffer[0], sides[5][1][1]);
-        swap(buffer[1], sides[5][0][1]);
+        swap(buffer[0], sides[5][1][0]);
+        swap(buffer[1], sides[5][0][0]);
 
-        sides[0][0][0] = buffer[0];
-        sides[0][1][0] = buffer[1];
+        sides[0][0][1] = buffer[0];
+        sides[0][1][1] = buffer[1];
 
         // translation
 
-        buffer[0] = sides[1][0][0];
+        buffer[0] = sides[3][0][0];
 
-        swap(buffer[0], sides[1][1][0]);
-        swap(buffer[0], sides[1][1][1]);
-        swap(buffer[0], sides[1][0][1]);
+        swap(buffer[0], sides[3][1][0]);
+        swap(buffer[0], sides[3][1][1]);
+        swap(buffer[0], sides[3][0][1]);
 
-        sides[1][0][0] = buffer[0];
+        sides[3][0][0] = buffer[0];
     }
 
-    void rot3i() // rotate left counterclockwise RENAME
+    void rot3() // rotate left clockwise
     {
         int buffer[N];
         buffer[0] = sides[0][0][0];
@@ -216,6 +191,35 @@ public:
         swap(buffer[0], sides[1][0][1]);
         swap(buffer[0], sides[1][1][1]);
         swap(buffer[0], sides[1][1][0]);
+
+        sides[1][0][0] = buffer[0];
+    }
+
+    void rot3i() // rotate left clockwise
+    {
+        int buffer[N];
+        buffer[0] = sides[0][0][0];
+        buffer[1] = sides[0][1][0];
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][1][0]);
+
+        swap(buffer[0], sides[4][0][0]);
+        swap(buffer[1], sides[4][1][0]);
+
+        swap(buffer[0], sides[5][1][1]);
+        swap(buffer[1], sides[5][0][1]);
+
+        sides[0][0][0] = buffer[0];
+        sides[0][1][0] = buffer[1];
+
+        // translation
+
+        buffer[0] = sides[1][0][0];
+
+        swap(buffer[0], sides[1][1][0]);
+        swap(buffer[0], sides[1][1][1]);
+        swap(buffer[0], sides[1][0][1]);
 
         sides[1][0][0] = buffer[0];
     }
@@ -285,35 +289,6 @@ public:
         buffer[0] = sides[1][0][0];
         buffer[1] = sides[1][0][1];
 
-        swap(buffer[0], sides[2][0][0]);
-        swap(buffer[1], sides[2][0][1]);
-
-        swap(buffer[0], sides[3][0][0]);
-        swap(buffer[1], sides[3][0][1]);
-
-        swap(buffer[0], sides[5][1][1]);
-        swap(buffer[1], sides[5][1][0]);
-
-        sides[1][0][0] = buffer[0];
-        sides[1][0][1] = buffer[1];
-
-        // translation counterclockwise
-        buffer[0] = sides[0][0][0];
-
-        swap(buffer[0], sides[0][1][0]);
-        swap(buffer[0], sides[0][1][1]);
-        swap(buffer[0], sides[0][0][1]);
-
-        sides[0][0][0] = buffer[0];
-    }
-
-    void rot5i() // rotate top counterclockwise
-    {
-        // rotation
-        int buffer[N];
-        buffer[0] = sides[1][0][0];
-        buffer[1] = sides[1][0][1];
-
         swap(buffer[0], sides[5][1][1]);
         swap(buffer[1], sides[5][1][0]);
 
@@ -332,6 +307,35 @@ public:
         swap(buffer[0], sides[0][0][1]);
         swap(buffer[0], sides[0][1][1]);
         swap(buffer[0], sides[0][1][0]);
+
+        sides[0][0][0] = buffer[0];
+    }
+
+    void rot5i() // rotate top counterclockwise
+    {
+        // rotation
+        int buffer[N];
+        buffer[0] = sides[1][0][0];
+        buffer[1] = sides[1][0][1];
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][0][1]);
+
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][0][1]);
+
+        swap(buffer[0], sides[5][1][1]);
+        swap(buffer[1], sides[5][1][0]);
+
+        sides[1][0][0] = buffer[0];
+        sides[1][0][1] = buffer[1];
+
+        // translation counterclockwise
+        buffer[0] = sides[0][0][0];
+
+        swap(buffer[0], sides[0][1][0]);
+        swap(buffer[0], sides[0][1][1]);
+        swap(buffer[0], sides[0][0][1]);
 
         sides[0][0][0] = buffer[0];
     }
@@ -393,6 +397,75 @@ public:
 
         sides[4][0][0] = buffer[0];
     }
+
+    int random(int min, int max)
+    {
+        // Use the current time as the seed
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
+        // Create a random number generator
+        std::mt19937 generator(seed); // Mersenne Twister engine
+
+        // Create a distribution in the range [min, max]
+        std::uniform_int_distribution<int> distribution(min, max);
+
+        return distribution(generator);
+    }
+
+    void shuffle()
+    {
+        // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
+
+        int randomNumber = random(10, 20);
+
+        for (int i = 0; i < randomNumber; i++)
+        {
+            int move = random(0, 11); // generate a random number between 0 and 11
+            switch (move)
+            {
+            case 0:
+                rot1();
+                break;
+            case 1:
+                rot1i();
+                break;
+            case 2:
+                rot2();
+                break;
+            case 3:
+                rot2i();
+                break;
+            case 4:
+                rot3();
+                break;
+            case 5:
+                rot3i();
+                break;
+            case 6:
+                rot4();
+                break;
+            case 7:
+                rot4i();
+                break;
+            case 8:
+                rot5();
+                break;
+            case 9:
+                rot5i();
+                break;
+            case 10:
+                rot6();
+                break;
+            case 11:
+                rot6i();
+                break;
+            }
+
+            cout << "\n"
+                 << endl;
+            print_cube();
+        }
+    }
 };
 
 int main()
@@ -400,24 +473,7 @@ int main()
 
     Cube c;
 
-    c.print_cube();
-    c.rot3();
-
-    cout << "\n"
-         << endl;
-    c.print_cube();
-
-    c.rot5();
-
-    cout << "\n"
-         << endl;
-    c.print_cube();
-
-    c.rot5i();
-
-    cout << "\n"
-         << endl;
-    c.print_cube();
+    c.shuffle();
 
     return 0;
 }
