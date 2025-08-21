@@ -81,10 +81,16 @@ class Cube {
 };
 
 
+void BFS(list<Cube> processing)
+{
+    // create copy
+}
+
+
 void AI_loop(Cube initial) 
 {
     // add initial state on structure
-    list<Cube> pastStates;
+    //list<Cube> pastStates;
     list<Cube> processing;
     processing.push_back(initial);
 
@@ -101,7 +107,7 @@ void AI_loop(Cube initial)
             return;
         }
         // analysing function()
-        CHOSEN_METHOD(processing, pastStates);
+        BFS(processing);
         // depth first search
         // breadth first search
         // A*
