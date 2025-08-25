@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <list>
+#include <stack>
 #define N 2
 using namespace std;
 
@@ -20,6 +21,8 @@ class Cube {
     public:
     // attr
     int sides[6][N][N];
+    Cube* prevCube;
+    int lastRot;
 
     // constructors
     Cube(){ // starts a cube with the values on the right place
@@ -31,6 +34,25 @@ class Cube {
                 {
                     sides[i][j][k] = i;
                 }
+
+        prevCube = NULL;    // this is the first cube
+        lastRot = -1;       // there was no rotation to get here
+    }
+
+    Cube(Cube prev, int rot){   // creates a cube based on a previous one
+        int i, j, k;
+
+        for(i=0; i<6; i++)
+            for(j=0; j<N; j++)
+                for(k=0; k<N; k++)
+                {
+                    sides[i][j][k] = prev.sides[i][j][k];
+                }
+
+        rotate(rot);
+
+        prevCube = &prev;    // points to the cube that originated this one
+        lastRot = rot;       // saves the last rotation
     }
 
     // methods
@@ -65,32 +87,73 @@ class Cube {
         return true;
     }
 
-    void rot1()
+    void rotate(int rot)
     {
-        int buffer[N];
-        buffer[0] = sides[0][0][0]; buffer[1] = sides[0][0][1];
-
-        swap(buffer[0], sides[3][0][1]); swap(buffer[1], sides[3][1][1]);
-
-        swap(buffer[0], sides[4][1][1]); swap(buffer[1], sides[4][1][0]);
-
-        swap(buffer[0], sides[1][1][0]); swap(buffer[1], sides[1][0][0]);
-
-        sides[0][0][0] = buffer[0]; sides[0][0][1] = buffer[1];
+        switch (rot)
+        {
+            case 0:
+                rot1();
+                break;
+            case 1:
+                rot1i();
+                break;
+            case 2:
+                rot2();
+                break;
+            case 3:
+                rot2i();
+                break;
+            case 4:
+                rot3();
+                break;
+            case 5:
+                rot3i();
+                break;
+            case 6:
+                rot4();
+                break;
+            case 7:
+                rot4i();
+                break;
+            case 8:
+                rot5();
+                break;
+            case 9:
+                rot5i();
+                break;
+            case 10:
+                rot6();
+                break;
+            case 11:
+                rot6i();
+                break;
+        }
     }
 };
 
 
+void printSolvedOrder(Cube);
 void BFS(list<Cube> processing)
 {
-    // create copy
+    int i;
+
+    Cube currState = processing.front();
+
+    for(i=0; i<12; i++)
+    {
+        Cube newCube(currState, i);
+
+        processing.push_back(newCube);
+    }
+
+    return;
 }
 
 
 void AI_loop(Cube initial) 
 {
     // add initial state on structure
-    //list<Cube> pastStates;
+    list<Cube> pastStates;
     list<Cube> processing;
     processing.push_back(initial);
 
@@ -101,16 +164,19 @@ void AI_loop(Cube initial)
         // if (solved state)
         if(currState.is_solved())
         {
-            // print solution
-            currState.print_cube();
-            // return;
+            printSolvedOrder(currState);
+            
             return;
         }
+
         // analysing function()
         BFS(processing);
-        // depth first search
         // breadth first search
+        // depth first search
         // A*
+
+        pastStates.push_back(currState);    // save the cubes on memory, as I use their address
+        processing.pop_front();
     }
 
     //return; no solution possible
@@ -119,10 +185,9 @@ void AI_loop(Cube initial)
 
 int main() {
     
-    Cube c;
+    Cube c; // empty constructor
 
     c.print_cube();
-    c.rot1();
 
     cout << "\n" << endl;
     c.print_cube();
@@ -156,5 +221,21 @@ string int_to_string(int x)
             return ss.str();
         default:
             return "?";
+    }
+}
+
+void printSolvedOrder(Cube result)
+{
+    stack<int> rotations;
+
+    Cube currCube;
+
+    for(currCube = result; currCube.prevCube != NULL; currCube = (*currCube.prevCube))
+        rotations.push(currCube.lastRot);
+
+    while(!rotations.empty())
+    {
+        cout << rotations.top() << " " << endl;
+        rotations.pop();
     }
 }
