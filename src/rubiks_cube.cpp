@@ -175,7 +175,7 @@ void AI_loop(Cube initial)
         // depth first search
         // A*
 
-        pastStates.push_back(currState);    // save the cubes on memory, as I use their address
+        pastStates.push_back(processing.front());   // save the cubes on memory, as I use their address
         processing.pop_front();
     }
 
