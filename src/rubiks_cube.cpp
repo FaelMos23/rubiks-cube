@@ -15,6 +15,7 @@ const string RESET = "\033[0m";
 
 
 string int_to_string(int);
+int oppos_rot(int);
 
 
 class Cube {
@@ -141,9 +142,12 @@ void BFS(list<Cube> processing)
 
     for(i=0; i<12; i++)
     {
-        Cube newCube(currState, i);
+        if(i != oppos_rot(currState.lastRot)) // avoids making a copy of the previous state
+        {
+            Cube newCube(currState, i);
 
-        processing.push_back(newCube);
+            processing.push_back(newCube);
+        }
     }
 
     return;
@@ -222,6 +226,14 @@ string int_to_string(int x)
         default:
             return "?";
     }
+}
+
+int oppos_rot(int rot)
+{
+    if(rot%2 == 0)
+        return rot+1;
+    
+    return rot-1;
 }
 
 void printSolvedOrder(Cube result)
