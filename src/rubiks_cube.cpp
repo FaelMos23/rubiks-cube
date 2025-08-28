@@ -2,6 +2,8 @@
 #include <sstream>
 #include <chrono>
 #include <random>
+#include <list>
+#include <stack>
 #define N 2
 using namespace std;
 
@@ -14,12 +16,15 @@ const string ORANGE = "\033[38;5;208m";
 const string RESET = "\033[0m";
 
 string int_to_string(int);
+int oppos_rot(int);
 
 class Cube
 {
 public:
     // attr
     int sides[6][N][N];
+    Cube* prevCube;
+    int lastRot;
 
     // constructors
     Cube()
@@ -32,14 +37,33 @@ public:
                 {
                     sides[i][j][k] = i;
                 }
+
+        prevCube = NULL;    // this is the first cube
+        lastRot = -1;       // there was no rotation to get here
+    }
+
+    Cube(Cube prev, int rot){   // creates a cube based on a previous one
+        int i, j, k;
+
+        for(i=0; i<6; i++)
+            for(j=0; j<N; j++)
+                for(k=0; k<N; k++)
+                {
+                    sides[i][j][k] = prev.sides[i][j][k];
+                }
+
+        rotate(rot);
+
+        prevCube = &prev;    // points to the cube that originated this one
+        lastRot = rot;       // saves the last rotation
     }
 
     // methods
     // direct 2x2 print, will make it better later
     void print_cube()
     {
-        cout << "  " << int_to_string(sides[0][0][0]) << int_to_string(sides[0][0][1]) << endl;
-        cout << "  " << int_to_string(sides[0][1][0]) << int_to_string(sides[0][1][1]) << endl;
+        cout << "  "                                                                << int_to_string(sides[0][0][0]) << int_to_string(sides[0][0][1]) << endl;
+        cout << "  "                                                                << int_to_string(sides[0][1][0]) << int_to_string(sides[0][1][1]) << endl;
         cout << int_to_string(sides[1][0][0]) << int_to_string(sides[1][0][1]) << int_to_string(sides[2][0][0]) << int_to_string(sides[2][0][1]) << int_to_string(sides[3][0][0]) << int_to_string(sides[3][0][1]) << endl;
         cout << int_to_string(sides[1][1][0]) << int_to_string(sides[1][1][1]) << int_to_string(sides[2][1][0]) << int_to_string(sides[2][1][1]) << int_to_string(sides[3][1][0]) << int_to_string(sides[3][1][1]) << endl;
         cout << "  " << int_to_string(sides[4][0][0]) << int_to_string(sides[4][0][1]) << endl;
@@ -464,14 +488,129 @@ public:
             cout << "\n"
                  << endl;
             print_cube();
+    bool is_solved()
+    {
+        int i, j, k;
+
+        for(i=0; i<5; i++) // 0-4 because if 5 sides are correct, the last one has to be correct too
+        {
+            if(sides[i][0][0] != sides[i][0][1] || 
+               sides[i][0][0] != sides[i][1][0] || 
+               sides[i][0][0] != sides[i][1][1] || 
+               sides[i][0][1] != sides[i][1][0] || 
+               sides[i][0][1] != sides[i][1][1] || 
+               sides[i][1][0] != sides[i][1][1])
+                return false;
+        }
+        
+        return true;
+    }
+
+    void rotate(int rot)
+    {
+        switch (rot)
+        {
+            case 0:
+                rot1();
+                break;
+            case 1:
+                rot1i();
+                break;
+            case 2:
+                rot2();
+                break;
+            case 3:
+                rot2i();
+                break;
+            case 4:
+                rot3();
+                break;
+            case 5:
+                rot3i();
+                break;
+            case 6:
+                rot4();
+                break;
+            case 7:
+                rot4i();
+                break;
+            case 8:
+                rot5();
+                break;
+            case 9:
+                rot5i();
+                break;
+            case 10:
+                rot6();
+                break;
+            case 11:
+                rot6i();
+                break;
         }
     }
 };
 
-int main()
-{
 
-    Cube c;
+void printSolvedOrder(Cube);
+void BFS(list<Cube> processing)
+{
+    int i;
+
+    Cube currState = processing.front();
+
+    for(i=0; i<12; i++)
+    {
+        if(i != oppos_rot(currState.lastRot)) // avoids making a copy of the previous state
+        {
+            Cube newCube(currState, i);
+
+            processing.push_back(newCube);
+        }
+    }
+
+    return;
+}
+
+
+void AI_loop(Cube initial) 
+{
+    // add initial state on structure
+    list<Cube> pastStates;
+    list<Cube> processing;
+    processing.push_back(initial);
+
+    // while structure is not empty
+    while(!processing.empty())
+    {
+        Cube currState = processing.front();
+        // if (solved state)
+        if(currState.is_solved())
+        {
+            printSolvedOrder(currState);
+            
+            return;
+        }
+
+        // analysing function()
+        BFS(processing);
+        // breadth first search
+        // depth first search
+        // A*
+
+        pastStates.push_back(processing.front());   // save the cubes on memory, as I use their address
+        processing.pop_front();
+    }
+
+    //return; no solution possible
+}
+
+
+
+int main() {
+    
+    Cube c; // empty constructor
+
+    c.print_cube();
 
     c.shuffle();
 
@@ -503,5 +642,29 @@ string int_to_string(int x)
         return ss.str();
     default:
         return "?";
+    }
+}
+
+int oppos_rot(int rot)
+{
+    if(rot%2 == 0)
+        return rot+1;
+    
+    return rot-1;
+}
+
+void printSolvedOrder(Cube result)
+{
+    stack<int> rotations;
+
+    Cube currCube;
+
+    for(currCube = result; currCube.prevCube != NULL; currCube = (*currCube.prevCube))
+        rotations.push(currCube.lastRot);
+
+    while(!rotations.empty())
+    {
+        cout << rotations.top() << " " << endl;
+        rotations.pop();
     }
 }
