@@ -17,15 +17,16 @@ const string RESET = "\033[0m";
 
 string int_to_string(int);
 int oppos_rot(int);
-void translation(int sides[6][N][N], bool isClockwise, int face);
+void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
+string int_to_rot_name(int);
 
 class Cube
 {
 public:
     // attr
-    int sides[6][N][N];
+    uint8_t sides[6][N][N];
     Cube* prevCube;
-    int lastRot;
+    uint8_t lastRot;
 
     // constructors
     Cube()
@@ -104,7 +105,7 @@ public:
     }
 
     // constructor that copies another cube than rotates it
-    Cube(Cube *prev, int rot){   // creates a cube based on a previous one
+    Cube(Cube *prev, uint8_t rot){   // creates a cube based on a previous one
         int i, j, k;
 
         for(i=0; i<6; i++)
@@ -138,16 +139,20 @@ public:
 
     void rot1() // rotate behind clockwise  0
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // top layer of TOP
         buffer[0] = sides[0][0][0];
         buffer[1] = sides[0][0][1];
 
+        // left layer of LEFT
         swap(buffer[0], sides[1][1][0]);
         swap(buffer[1], sides[1][0][0]);
 
+        // bottom layer of BOTTOM
         swap(buffer[0], sides[4][1][1]);
         swap(buffer[1], sides[4][1][0]);
 
+        // right layer of RIGHT
         swap(buffer[0], sides[3][0][1]);
         swap(buffer[1], sides[3][1][1]);
 
@@ -161,16 +166,20 @@ public:
 
     void rot1i() // rotate behind counterclockwise  1
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // top layer of TOP
         buffer[0] = sides[0][0][0];
         buffer[1] = sides[0][0][1];
 
+        // right layer of RIGHT
         swap(buffer[0], sides[3][0][1]);
         swap(buffer[1], sides[3][1][1]);
 
+        // bottom layer of BOTTOM
         swap(buffer[0], sides[4][1][1]);
         swap(buffer[1], sides[4][1][0]);
 
+        // left layer of LEFT
         swap(buffer[0], sides[1][1][0]);
         swap(buffer[1], sides[1][0][0]);
 
@@ -184,16 +193,20 @@ public:
 
     void rot2() // rotate right clockwise  2
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // right layer of TOP
         buffer[0] = sides[0][0][1];
         buffer[1] = sides[0][1][1];
 
-        swap(buffer[0], sides[5][1][0]);
-        swap(buffer[1], sides[5][0][0]);
+        // right layer of BEHIND
+        swap(buffer[0], sides[5][0][1]);
+        swap(buffer[1], sides[5][1][1]);
 
+        // right layer of BOTTOM
         swap(buffer[0], sides[4][0][1]);
         swap(buffer[1], sides[4][1][1]);
 
+        // right layer of FRONT
         swap(buffer[0], sides[2][0][1]);
         swap(buffer[1], sides[2][1][1]);
 
@@ -207,18 +220,22 @@ public:
 
     void rot2i() // rotate right counterclockwise  3
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // right layer of TOP
         buffer[0] = sides[0][0][1];
         buffer[1] = sides[0][1][1];
 
+        // right layer of FRONT
         swap(buffer[0], sides[2][0][1]);
         swap(buffer[1], sides[2][1][1]);
 
+        // right layer of BOTTOM
         swap(buffer[0], sides[4][0][1]);
         swap(buffer[1], sides[4][1][1]);
 
-        swap(buffer[0], sides[5][1][0]);
-        swap(buffer[1], sides[5][0][0]);
+        // right layer of BEHIND
+        swap(buffer[0], sides[5][0][1]);
+        swap(buffer[1], sides[5][1][1]);
 
         sides[0][0][1] = buffer[0];
         sides[0][1][1] = buffer[1];
@@ -230,7 +247,7 @@ public:
 
     void rot3() // rotate left clockwise  4
     {
-        int buffer[N];
+        uint8_t buffer[N];
 
         buffer[0] = sides[0][0][0];
         buffer[1] = sides[0][1][0];
@@ -241,8 +258,8 @@ public:
         swap(buffer[0], sides[4][0][0]);
         swap(buffer[1], sides[4][1][0]);
 
-        swap(buffer[0], sides[5][1][1]);
-        swap(buffer[1], sides[5][0][1]);
+        swap(buffer[0], sides[5][0][0]);
+        swap(buffer[1], sides[5][1][0]);
 
         sides[0][0][0] = buffer[0];
         sides[0][1][0] = buffer[1];
@@ -252,9 +269,9 @@ public:
         translation(sides, true, 1);
     }
 
-    void rot3i() // rotate left clockwise  5
+    void rot3i() // rotate left counterclockwise  5
     {
-        int buffer[N];
+        uint8_t buffer[N];
         buffer[0] = sides[0][0][0];
         buffer[1] = sides[0][1][0];
 
@@ -277,18 +294,22 @@ public:
 
     void rot4() // rotate front clockwise  6
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // bottom layer of TOP
         buffer[0] = sides[0][1][0];
         buffer[1] = sides[0][1][1];
 
+        // left layer of RIGHT
         swap(buffer[0], sides[3][0][0]);
         swap(buffer[1], sides[3][1][0]);
 
-        swap(buffer[0], sides[4][0][0]);
-        swap(buffer[1], sides[4][0][1]);
+        // top layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][0][0]);
 
-        swap(buffer[0], sides[1][0][1]);
-        swap(buffer[1], sides[1][1][1]);
+        // right layer of LEFT
+        swap(buffer[0], sides[1][1][1]);
+        swap(buffer[1], sides[1][0][1]);
 
         sides[0][1][0] = buffer[0];
         sides[0][1][1] = buffer[1];
@@ -300,16 +321,20 @@ public:
 
     void rot4i() // rotate front counterclockwise  7
     {
-        int buffer[N];
+        uint8_t buffer[N];
+        // bottom layer of TOP
         buffer[0] = sides[0][1][0];
         buffer[1] = sides[0][1][1];
 
-        swap(buffer[0], sides[1][0][1]);
-        swap(buffer[1], sides[1][1][1]);
+        // right layer of LEFT
+        swap(buffer[0], sides[1][1][1]);
+        swap(buffer[1], sides[1][0][1]);
 
-        swap(buffer[0], sides[4][0][0]);
-        swap(buffer[1], sides[4][0][1]);
+        // top layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][0][0]);
 
+        // left layer of RIGHT
         swap(buffer[0], sides[3][0][0]);
         swap(buffer[1], sides[3][1][0]);
 
@@ -324,7 +349,7 @@ public:
     void rot5() // rotate top clockwise  8
     {
         // rotation
-        int buffer[N];
+        uint8_t buffer[N];
         buffer[0] = sides[1][0][0];
         buffer[1] = sides[1][0][1];
 
@@ -347,7 +372,7 @@ public:
     void rot5i() // rotate top counterclockwise  9
     {
         // rotation
-        int buffer[N];
+        uint8_t buffer[N];
         buffer[0] = sides[1][0][0];
         buffer[1] = sides[1][0][1];
 
@@ -364,13 +389,13 @@ public:
         sides[1][0][1] = buffer[1];
 
         // translation counterclockwise
-        translation(sides, true, 0);
+        translation(sides, false, 0);
     }
 
     void rot6() // rotate bottom clockwise  10
     {
         // rotation
-        int buffer[N];
+        uint8_t buffer[N];
         buffer[0] = sides[1][1][0];
         buffer[1] = sides[1][1][1];
 
@@ -393,7 +418,7 @@ public:
     void rot6i() // rotate bottom counterclockwise  11
     {
         // rotation
-        int buffer[N];
+        uint8_t buffer[N];
         buffer[0] = sides[1][1][0];
         buffer[1] = sides[1][1][1];
 
@@ -431,7 +456,7 @@ public:
     {
         // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
 
-        int randomNumber = random(10, 20);
+        int randomNumber = random(10, 20); // change this to change the amount of initial rotations
 
         cout << "[";
         for (int i = 0; i < randomNumber; i++)
@@ -440,7 +465,7 @@ public:
             
             single_rotation(move);
 
-            cout << move << (i == randomNumber-1? "" : ", ");
+            cout << int_to_rot_name(move) << (i == randomNumber-1? "" : ", ");
             // for printing each step
             //cout << "\n" << endl;
             //print_cube();
@@ -497,7 +522,7 @@ void BFS(list<Cube>* processing, list<Cube>* pastStates)
         if(i != prevRot) // avoids making a copy of the previous state
         {
             Cube newCube(&((*pastStates).back()), i);
-
+            
             (*processing).push_back(newCube);
         }
     }
@@ -524,7 +549,6 @@ void AI_loop(Cube initial)
         if(currState.is_solved())
         {
             cout << "Solved!" << endl;
-            currState.print_cube();
             
             for(currCube.copy(currState); currCube.prevCube != NULL; currCube.copy(*currCube.prevCube))
             {
@@ -534,7 +558,7 @@ void AI_loop(Cube initial)
             cout << "[";
             while(!rotations.empty())
             {
-                cout << rotations.top() << ((rotations.size() != 1)? ", " : "");
+                cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1)? ", " : "");
                 rotations.pop();
             }
             cout << "]";
@@ -550,7 +574,7 @@ void AI_loop(Cube initial)
         // A*
     }
 
-    //return; no solution possible
+    //return; // no solution possible
 }
 
 
@@ -609,15 +633,48 @@ int oppos_rot(int rot)
     return rot-1;
 }
 
-void translation(int sides[6][N][N], bool isClockwise, int face)
+void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
 {
-    int buffer;
+    uint8_t buffer;
 
     buffer = sides[face][0][0];
 
-    swap(buffer, isClockwise? sides[face][1][0] : sides[face][0][0]);
+    swap(buffer, isClockwise? sides[face][0][1] : sides[face][1][0]);
     swap(buffer, sides[face][1][1]);
     swap(buffer, isClockwise? sides[face][1][0] : sides[face][0][1]);
 
     sides[face][0][0] = buffer;
+}
+
+string int_to_rot_name(int n)
+{
+    switch(n)
+    {
+        case 0:
+            return "B";
+        case 1:
+            return "B\'";
+        case 2:
+            return "R";
+        case 3:
+            return "R\'";
+        case 4:
+            return "L";
+        case 5:
+            return "L\'";
+        case 6:
+            return "F";
+        case 7:
+            return "F\'";
+        case 8:
+            return "T";
+        case 9:
+            return "T'";
+        case 10:
+            return "U";
+        case 11:
+            return "U'";
+        default:
+            return "?";
+    }
 }
