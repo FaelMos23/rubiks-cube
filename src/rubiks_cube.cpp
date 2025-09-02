@@ -20,12 +20,36 @@ int oppos_rot(int);
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
 string int_to_rot_name(int);
 
+class CubeInfo
+{
+public:
+    CubeInfo *prevCube;
+    uint8_t lastRot;
+
+    // constructors
+    CubeInfo()
+    {
+        prevCube = NULL; // this is the first cube
+        lastRot = -1;    // there was no rotation to get here
+    }
+
+    CubeInfo(Cube *prev);
+
+    void copyInfo(CubeInfo original)
+    {
+        prevCube = original.prevCube;
+        lastRot = original.lastRot;
+    }
+
+    void copyFromCube(Cube original);
+};
+
 class Cube
 {
 public:
     // attr
     uint8_t sides[6][N][N];
-    Cube* prevCube;
+    CubeInfo *prevCube;
     uint8_t lastRot;
 
     // constructors
@@ -40,10 +64,10 @@ public:
                     sides[i][j][k] = i;
                 }
 
-        prevCube = NULL;    // this is the first cube
-        lastRot = -1;       // there was no rotation to get here
+        prevCube = NULL; // this is the first cube
+        lastRot = -1;    // there was no rotation to get here
     }
-    
+
     // makes a copied cube
     Cube(Cube const &original)
     { // starts a cube with the values on the right place
@@ -65,74 +89,93 @@ public:
     {
         switch (rot)
         {
-            case 0:
-                rot1();
-                break;
-            case 1:
-                rot1i();
-                break;
-            case 2:
-                rot2();
-                break;
-            case 3:
-                rot2i();
-                break;
-            case 4:
-                rot3();
-                break;
-            case 5:
-                rot3i();
-                break;
-            case 6:
-                rot4();
-                break;
-            case 7:
-                rot4i();
-                break;
-            case 8:
-                rot5();
-                break;
-            case 9:
-                rot5i();
-                break;
-            case 10:
-                rot6();
-                break;
-            case 11:
-                rot6i();
-                break;
+        case 0:
+            rot1();
+            break;
+        case 1:
+            rot1i();
+            break;
+        case 2:
+            rot2();
+            break;
+        case 3:
+            rot2i();
+            break;
+        case 4:
+            rot3();
+            break;
+        case 5:
+            rot3i();
+            break;
+        case 6:
+            rot4();
+            break;
+        case 7:
+            rot4i();
+            break;
+        case 8:
+            rot5();
+            break;
+        case 9:
+            rot5i();
+            break;
+        case 10:
+            rot6();
+            break;
+        case 11:
+            rot6i();
+            break;
         }
     }
 
-    // constructor that copies another cube than rotates it
-    Cube(Cube *prev, uint8_t rot){   // creates a cube based on a previous one
+    // constructor that copies another cube then rotates it
+    // Cube(CubeInfo *prev, int rot)
+    //{ // creates a cube based on a previous one
+    //  int i, j, k;
+    //
+    //   for (i = 0; i < 6; i++)
+    //       for (j = 0; j < N; j++)
+    //           for (k = 0; k < N; k++)
+    //           {
+    //                sides[i][j][k] = (*prev).sides[i][j][k];
+    //          }
+    //
+    //   single_rotation(rot);
+    //
+    //    prevCube = prev; // points to the cube that originated this one
+    //    lastRot = rot;   // saves the last rotation
+    //}
+
+    Cube(CubeInfo *past, Cube *processing, int rot)
+    {
         int i, j, k;
 
-        for(i=0; i<6; i++)
-            for(j=0; j<N; j++)
-                for(k=0; k<N; k++)
+        for (i = 0; i < 6; i++)
+            for (j = 0; j < N; j++)
+                for (k = 0; k < N; k++)
                 {
-                    sides[i][j][k] = (*prev).sides[i][j][k];
+                    sides[i][j][k] = (*processing).sides[i][j][k];
                 }
 
         single_rotation(rot);
 
-        prevCube = prev;    // points to the cube that originated this one
-        lastRot = rot;       // saves the last rotation
+        prevCube = past;
+        lastRot = rot;
     }
 
     // methods
     // direct 2x2 print, will make it better later
     void print_cube()
     {
-        cout << "  "                                                                << int_to_string(sides[0][0][0]) << int_to_string(sides[0][0][1]) << endl;
-        cout << "  "                                                                << int_to_string(sides[0][1][0]) << int_to_string(sides[0][1][1]) << endl;
+        cout << "  " << int_to_string(sides[0][0][0]) << int_to_string(sides[0][0][1]) << endl;
+        cout << "  " << int_to_string(sides[0][1][0]) << int_to_string(sides[0][1][1]) << endl;
         cout << int_to_string(sides[1][0][0]) << int_to_string(sides[1][0][1]) << int_to_string(sides[2][0][0]) << int_to_string(sides[2][0][1]) << int_to_string(sides[3][0][0]) << int_to_string(sides[3][0][1]) << endl;
         cout << int_to_string(sides[1][1][0]) << int_to_string(sides[1][1][1]) << int_to_string(sides[2][1][0]) << int_to_string(sides[2][1][1]) << int_to_string(sides[3][1][0]) << int_to_string(sides[3][1][1]) << endl;
         cout << "  " << int_to_string(sides[4][0][0]) << int_to_string(sides[4][0][1]) << endl;
         cout << "  " << int_to_string(sides[4][1][0]) << int_to_string(sides[4][1][1]) << endl;
         cout << "  " << int_to_string(sides[5][0][0]) << int_to_string(sides[5][0][1]) << endl;
-        cout << "  " << int_to_string(sides[5][1][0]) << int_to_string(sides[5][1][1]) << "\n" << endl;
+        cout << "  " << int_to_string(sides[5][1][0]) << int_to_string(sides[5][1][1]) << "\n"
+             << endl;
     }
 
     // rotation methods
@@ -462,13 +505,13 @@ public:
         for (int i = 0; i < randomNumber; i++)
         {
             int move = random(0, 11); // generate a random number between 0 and 11
-            
+
             single_rotation(move);
 
-            cout << int_to_rot_name(move) << (i == randomNumber-1? "" : ", ");
+            cout << int_to_rot_name(move) << (i == randomNumber - 1 ? "" : ", ");
             // for printing each step
-            //cout << "\n" << endl;
-            //print_cube();
+            // cout << "\n" << endl;
+            // print_cube();
         }
         cout << "]" << endl;
     }
@@ -477,93 +520,103 @@ public:
     {
         int i, j, k;
 
-        for(i=0; i<5; i++) // 0-4 because if 5 sides are correct, the last one has to be correct too
+        for (i = 0; i < 5; i++) // 0-4 because if 5 sides are correct, the last one has to be correct too
         {
-            if(sides[i][0][0] != sides[i][0][1] || 
-               sides[i][0][0] != sides[i][1][0] || 
-               sides[i][0][0] != sides[i][1][1] || 
-               sides[i][0][1] != sides[i][1][0] || 
-               sides[i][0][1] != sides[i][1][1] || 
-               sides[i][1][0] != sides[i][1][1])
+            if (sides[i][0][0] != sides[i][0][1] ||
+                sides[i][0][0] != sides[i][1][0] ||
+                sides[i][0][0] != sides[i][1][1] ||
+                sides[i][0][1] != sides[i][1][0] ||
+                sides[i][0][1] != sides[i][1][1] ||
+                sides[i][1][0] != sides[i][1][1])
                 return false;
         }
-        
+
         return true;
-    }
-
-    void copy(Cube original)
-    {
-        int i, j, k;
-
-        for (i = 0; i < 6; i++)
-            for (j = 0; j < N; j++)
-                for (k = 0; k < N; k++)
-                {
-                    sides[i][j][k] = original.sides[i][j][k];
-                }
-
-        prevCube = original.prevCube;
-        lastRot = original.lastRot;
     }
 };
 
+// these are part of CubeInfo but because of circular dependency it is being defined here, after Cube
+CubeInfo::CubeInfo(Cube *prev)
+{
+    prevCube = prev->prevCube;
+    lastRot = prev->lastRot;
+}
 
-void BFS(list<Cube>* processing, list<Cube>* pastStates)
+void CubeInfo::copyFromCube(Cube original)
+{
+    prevCube = original.prevCube;
+    lastRot = original.lastRot;
+}
+
+void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
 {
     int i;
-    (*pastStates).push_back((*processing).front());   // save the cubes on memory, as I use their address
-    (*processing).pop_front(); 
+
+    CubeInfo newInfo(&((*processing).front()));
+
+    (*pastStates).push_back(newInfo);
+    // used to read every entry and its contents
+    // cout << &(*pastStates).back() << ": prevCube- " << (*pastStates).back().prevCube << ", lastRot- " << int_to_rot_name((*pastStates).back().lastRot) << endl;
+
+    // save the cubes on memory, as I use their address
     // I need to analyze the state when it is already on pastStates, because that is the final
     // destination of the state, so its address won't change
 
-    int prevRot = oppos_rot((*pastStates).back().lastRot);
-    for(i=0; i<12; i++)
+    int undoLastRot = oppos_rot((*processing).front().lastRot);
+    for (i = 0; i < 12; i++)
     {
-        if(i != prevRot) // avoids making a copy of the previous state
+        if (i != undoLastRot) // avoids making a copy of the previous state
         {
-            Cube newCube(&((*pastStates).back()), i);
-            
+            Cube newCube(&((*pastStates).back()), &((*processing).front()), i);
+
             (*processing).push_back(newCube);
         }
     }
 
+    (*processing).pop_front();
+
     return;
 }
 
-
-void AI_loop(Cube initial) 
+void AI_loop(Cube initial)
 {
     // add initial state on structure
-    list<Cube> pastStates;
+    list<CubeInfo> pastStates;
     list<Cube> processing;
     stack<int> rotations;
-    Cube currState;
-    Cube currCube;
+    CubeInfo currCube;
     processing.push_back(initial);
+    int n = 1, i = 1, total = 1;
 
     // while structure is not empty
-    while(!processing.empty())
+    while (!processing.empty())
     {
-        currState = processing.front();
-        // if (solved state)
-        if(currState.is_solved())
+
+        if (pastStates.size() >= total)
         {
-            cout << "Solved!" << endl;
-            
-            for(currCube.copy(currState); currCube.prevCube != NULL; currCube.copy(*currCube.prevCube))
+            cout << "rot " << i++ << endl;
+            n *= 12;
+            total += n;
+        }
+
+        // if (solved state)
+        if ((processing.front()).is_solved())
+        {
+            cout << "Solved! " << endl;
+
+            for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
             {
                 rotations.push(currCube.lastRot);
             }
 
             cout << "[";
-            while(!rotations.empty())
+            while (!rotations.empty())
             {
-                cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1)? ", " : "");
+                cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
                 rotations.pop();
             }
             cout << "]";
 
-            
             return;
         }
 
@@ -574,13 +627,12 @@ void AI_loop(Cube initial)
         // A*
     }
 
-    //return; // no solution possible
+    // return; no solution possible
 }
 
+int main()
+{
 
-
-int main() {
-    
     Cube c; // empty constructor
 
     c.print_cube();
@@ -624,13 +676,13 @@ string int_to_string(int x)
 
 int oppos_rot(int rot)
 {
-    if(rot == -1)
+    if (rot == -1)
         return -1;
 
-    if(rot%2 == 0)
-        return rot+1;
-    
-    return rot-1;
+    if (rot % 2 == 0)
+        return rot + 1;
+
+    return rot - 1;
 }
 
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
@@ -639,42 +691,42 @@ void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
 
     buffer = sides[face][0][0];
 
-    swap(buffer, isClockwise? sides[face][0][1] : sides[face][1][0]);
+    swap(buffer, isClockwise ? sides[face][0][1] : sides[face][1][0]);
     swap(buffer, sides[face][1][1]);
-    swap(buffer, isClockwise? sides[face][1][0] : sides[face][0][1]);
+    swap(buffer, isClockwise ? sides[face][1][0] : sides[face][0][1]);
 
     sides[face][0][0] = buffer;
 }
 
 string int_to_rot_name(int n)
 {
-    switch(n)
+    switch (n)
     {
-        case 0:
-            return "B";
-        case 1:
-            return "B\'";
-        case 2:
-            return "R";
-        case 3:
-            return "R\'";
-        case 4:
-            return "L";
-        case 5:
-            return "L\'";
-        case 6:
-            return "F";
-        case 7:
-            return "F\'";
-        case 8:
-            return "T";
-        case 9:
-            return "T'";
-        case 10:
-            return "U";
-        case 11:
-            return "U'";
-        default:
-            return "?";
+    case 0:
+        return "B";
+    case 1:
+        return "B\'";
+    case 2:
+        return "R";
+    case 3:
+        return "R\'";
+    case 4:
+        return "L";
+    case 5:
+        return "L\'";
+    case 6:
+        return "F";
+    case 7:
+        return "F\'";
+    case 8:
+        return "T";
+    case 9:
+        return "T'";
+    case 10:
+        return "U";
+    case 11:
+        return "U'";
+    default:
+        return "?";
     }
 }
