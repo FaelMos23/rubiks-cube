@@ -26,7 +26,7 @@ class CubeInfo
 {
 public:
     CubeInfo *prevCube;
-    int lastRot;
+    uint8_t lastRot;
 
     // constructors
     CubeInfo()
@@ -52,7 +52,7 @@ public:
     // attr
     uint8_t sides[6][N][N];
     CubeInfo *prevCube;
-    int lastRot;
+    uint8_t lastRot;
 
     // constructors
     Cube()
@@ -501,7 +501,7 @@ public:
     {
         // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
 
-        int randomNumber = random(10, 20);
+        int randomNumber = random(7, 11);
 
         cout << "[";
         for (int i = 0; i < randomNumber; i++)
@@ -589,10 +589,19 @@ void AI_loop(Cube initial)
     stack<int> rotations;
     CubeInfo currCube;
     processing.push_back(initial);
+    int n = 1, i= 1, total = 1;
 
     // while structure is not empty
     while (!processing.empty())
     {
+
+        if(pastStates.size() >= total)
+        {
+            cout << "rot " << i++ << endl;
+            n *= 12;
+            total += n;
+        }
+
         // if (solved state)
         if ((processing.front()).is_solved())
         {
