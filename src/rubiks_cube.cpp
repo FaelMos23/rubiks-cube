@@ -16,9 +16,11 @@ const string ORANGE = "\033[38;5;208m";
 const string RESET = "\033[0m";
 
 string int_to_string(int);
-int oppos_rot(int);
+void oppos_parallel_rots(int, int*, int*);
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
 string int_to_rot_name(int);
+
+class Cube;
 
 class CubeInfo
 {
@@ -562,10 +564,12 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     // I need to analyze the state when it is already on pastStates, because that is the final
     // destination of the state, so its address won't change
 
-    int undoLastRot = oppos_rot((*processing).front().lastRot);
+    int undoLastRot;
+    int parallelRot;
+    oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
     for (i = 0; i < 12; i++)
     {
-        if (i != undoLastRot) // avoids making a copy of the previous state
+        if (i != undoLastRot && i != parallelRot) // avoids making a copy of the previous state and to have the same state buts to the side
         {
             Cube newCube(&((*pastStates).back()), &((*processing).front()), i);
 
@@ -594,8 +598,11 @@ void AI_loop(Cube initial)
 
         if (pastStates.size() >= total)
         {
-            cout << "rot " << i++ << endl;
-            n *= 12;
+            cout << "rot " << i++ << ". To be processed:" << processing.size() << endl;
+            if(n==1)
+                n *= 12;
+            else
+                n *= 10;
             total += n;
         }
 
@@ -674,15 +681,63 @@ string int_to_string(int x)
     }
 }
 
-int oppos_rot(int rot)
+void oppos_parallel_rots(int prevRot, int* oppos, int* parallel)
 {
-    if (rot == -1)
-        return -1;
-
-    if (rot % 2 == 0)
-        return rot + 1;
-
-    return rot - 1;
+    switch(prevRot)
+    {
+        case 0:
+            *oppos = 1;
+            *parallel = 7;
+            return;
+        case 1:
+            *oppos = 0;
+            *parallel = 6;
+            return;
+        case 2:
+            *oppos = 3;
+            *parallel = 5;
+            return;
+        case 3:
+            *oppos = 2;
+            *parallel = 4;
+            return;
+        case 4:
+            *oppos = 5;
+            *parallel = 3;
+            return;
+        case 5:
+            *oppos = 4;
+            *parallel = 2;
+            return;
+        case 6:
+            *oppos = 7;
+            *parallel = 1;
+            return;
+        case 7:
+            *oppos = 6;
+            *parallel = 0;
+            return;
+        case 8:
+            *oppos = 9;
+            *parallel = 11;
+            return;
+        case 9:
+            *oppos = 8;
+            *parallel = 10;
+            return;
+        case 10:
+            *oppos = 11;
+            *parallel = 9;
+            return;
+        case 11:
+            *oppos = 10;
+            *parallel = 8;
+            return;
+        default:
+            *oppos = -1;
+            *parallel = -1;
+            return;
+    }
 }
 
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
