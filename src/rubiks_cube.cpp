@@ -16,7 +16,8 @@ const string ORANGE = "\033[38;5;208m";
 const string RESET = "\033[0m";
 
 string int_to_string(int);
-void oppos_parallel_rots(int, int*, int*);
+//void oppos_parallel_rots(int, int*, int*);
+int oppos_rot(int);
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
 string int_to_rot_name(int);
 
@@ -92,40 +93,24 @@ public:
         switch (rot)
         {
         case 0:
-            rot1();
+            f();
             break;
         case 1:
-            rot1i();
+            f_l();
             break;
         case 2:
-            rot2();
+            r();
             break;
         case 3:
-            rot2i();
+            r_l();
             break;
         case 4:
-            rot3();
+            t();
             break;
         case 5:
-            rot3i();
+            t_l();
             break;
-        case 6:
-            rot4();
-            break;
-        case 7:
-            rot4i();
-            break;
-        case 8:
-            rot5();
-            break;
-        case 9:
-            rot5i();
-            break;
-        case 10:
-            rot6();
-            break;
-        case 11:
-            rot6i();
+        default:
             break;
         }
     }
@@ -182,6 +167,162 @@ public:
 
     // rotation methods
 
+    void f() // rotate front clockwise  6
+    {
+        uint8_t buffer[N];
+        // bottom layer of TOP
+        buffer[0] = sides[0][1][0];
+        buffer[1] = sides[0][1][1];
+
+        // left layer of RIGHT
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][1][0]);
+
+        // top layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][0][0]);
+
+        // right layer of LEFT
+        swap(buffer[0], sides[1][1][1]);
+        swap(buffer[1], sides[1][0][1]);
+
+        sides[0][1][0] = buffer[0];
+        sides[0][1][1] = buffer[1];
+
+        // translation
+
+        translation(sides, true, 2);
+    }
+
+    void f_l() // rotate front counterclockwise  7
+    {
+        uint8_t buffer[N];
+        // bottom layer of TOP
+        buffer[0] = sides[0][1][0];
+        buffer[1] = sides[0][1][1];
+
+        // right layer of LEFT
+        swap(buffer[0], sides[1][1][1]);
+        swap(buffer[1], sides[1][0][1]);
+
+        // top layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][0][0]);
+
+        // left layer of RIGHT
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][1][0]);
+
+        sides[0][1][0] = buffer[0];
+        sides[0][1][1] = buffer[1];
+
+        // translation
+
+        translation(sides, false, 2);
+    }
+
+    void r() // rotate right clockwise  2
+    {
+        uint8_t buffer[N];
+        // right layer of TOP
+        buffer[0] = sides[0][0][1];
+        buffer[1] = sides[0][1][1];
+
+        // right layer of BEHIND
+        swap(buffer[0], sides[5][0][1]);
+        swap(buffer[1], sides[5][1][1]);
+
+        // right layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][1][1]);
+
+        // right layer of FRONT
+        swap(buffer[0], sides[2][0][1]);
+        swap(buffer[1], sides[2][1][1]);
+
+        sides[0][0][1] = buffer[0];
+        sides[0][1][1] = buffer[1];
+
+        // translation
+
+        translation(sides, true, 3);
+    }
+
+    void r_l() // rotate right counterclockwise  3
+    {
+        uint8_t buffer[N];
+        // right layer of TOP
+        buffer[0] = sides[0][0][1];
+        buffer[1] = sides[0][1][1];
+
+        // right layer of FRONT
+        swap(buffer[0], sides[2][0][1]);
+        swap(buffer[1], sides[2][1][1]);
+
+        // right layer of BOTTOM
+        swap(buffer[0], sides[4][0][1]);
+        swap(buffer[1], sides[4][1][1]);
+
+        // right layer of BEHIND
+        swap(buffer[0], sides[5][0][1]);
+        swap(buffer[1], sides[5][1][1]);
+
+        sides[0][0][1] = buffer[0];
+        sides[0][1][1] = buffer[1];
+
+        // translation
+
+        translation(sides, false, 3);
+    }
+
+    void t() // rotate top clockwise  8
+    {
+        // rotation
+        uint8_t buffer[N];
+        buffer[0] = sides[1][0][0];
+        buffer[1] = sides[1][0][1];
+
+        swap(buffer[0], sides[5][1][1]);
+        swap(buffer[1], sides[5][1][0]);
+
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][0][1]);
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][0][1]);
+
+        sides[1][0][0] = buffer[0];
+        sides[1][0][1] = buffer[1];
+
+        // translation clockwise
+        translation(sides, true, 0);
+    }
+
+    void t_l() // rotate top counterclockwise  9
+    {
+        // rotation
+        uint8_t buffer[N];
+        buffer[0] = sides[1][0][0];
+        buffer[1] = sides[1][0][1];
+
+        swap(buffer[0], sides[2][0][0]);
+        swap(buffer[1], sides[2][0][1]);
+
+        swap(buffer[0], sides[3][0][0]);
+        swap(buffer[1], sides[3][0][1]);
+
+        swap(buffer[0], sides[5][1][1]);
+        swap(buffer[1], sides[5][1][0]);
+
+        sides[1][0][0] = buffer[0];
+        sides[1][0][1] = buffer[1];
+
+        // translation counterclockwise
+        translation(sides, false, 0);
+    }
+
+
+    /*
     void rot1() // rotate behind clockwise  0
     {
         uint8_t buffer[N];
@@ -236,59 +377,7 @@ public:
         translation(sides, false, 5);
     }
 
-    void rot2() // rotate right clockwise  2
-    {
-        uint8_t buffer[N];
-        // right layer of TOP
-        buffer[0] = sides[0][0][1];
-        buffer[1] = sides[0][1][1];
-
-        // right layer of BEHIND
-        swap(buffer[0], sides[5][0][1]);
-        swap(buffer[1], sides[5][1][1]);
-
-        // right layer of BOTTOM
-        swap(buffer[0], sides[4][0][1]);
-        swap(buffer[1], sides[4][1][1]);
-
-        // right layer of FRONT
-        swap(buffer[0], sides[2][0][1]);
-        swap(buffer[1], sides[2][1][1]);
-
-        sides[0][0][1] = buffer[0];
-        sides[0][1][1] = buffer[1];
-
-        // translation
-
-        translation(sides, true, 3);
-    }
-
-    void rot2i() // rotate right counterclockwise  3
-    {
-        uint8_t buffer[N];
-        // right layer of TOP
-        buffer[0] = sides[0][0][1];
-        buffer[1] = sides[0][1][1];
-
-        // right layer of FRONT
-        swap(buffer[0], sides[2][0][1]);
-        swap(buffer[1], sides[2][1][1]);
-
-        // right layer of BOTTOM
-        swap(buffer[0], sides[4][0][1]);
-        swap(buffer[1], sides[4][1][1]);
-
-        // right layer of BEHIND
-        swap(buffer[0], sides[5][0][1]);
-        swap(buffer[1], sides[5][1][1]);
-
-        sides[0][0][1] = buffer[0];
-        sides[0][1][1] = buffer[1];
-
-        // translation
-
-        translation(sides, false, 3);
-    }
+    2 is being used, now r and 2i = r_l
 
     void rot3() // rotate left clockwise  4
     {
@@ -337,105 +426,9 @@ public:
         translation(sides, false, 1);
     }
 
-    void rot4() // rotate front clockwise  6
-    {
-        uint8_t buffer[N];
-        // bottom layer of TOP
-        buffer[0] = sides[0][1][0];
-        buffer[1] = sides[0][1][1];
+    4 is being used, now t and 4i = t_l
 
-        // left layer of RIGHT
-        swap(buffer[0], sides[3][0][0]);
-        swap(buffer[1], sides[3][1][0]);
-
-        // top layer of BOTTOM
-        swap(buffer[0], sides[4][0][1]);
-        swap(buffer[1], sides[4][0][0]);
-
-        // right layer of LEFT
-        swap(buffer[0], sides[1][1][1]);
-        swap(buffer[1], sides[1][0][1]);
-
-        sides[0][1][0] = buffer[0];
-        sides[0][1][1] = buffer[1];
-
-        // translation
-
-        translation(sides, true, 2);
-    }
-
-    void rot4i() // rotate front counterclockwise  7
-    {
-        uint8_t buffer[N];
-        // bottom layer of TOP
-        buffer[0] = sides[0][1][0];
-        buffer[1] = sides[0][1][1];
-
-        // right layer of LEFT
-        swap(buffer[0], sides[1][1][1]);
-        swap(buffer[1], sides[1][0][1]);
-
-        // top layer of BOTTOM
-        swap(buffer[0], sides[4][0][1]);
-        swap(buffer[1], sides[4][0][0]);
-
-        // left layer of RIGHT
-        swap(buffer[0], sides[3][0][0]);
-        swap(buffer[1], sides[3][1][0]);
-
-        sides[0][1][0] = buffer[0];
-        sides[0][1][1] = buffer[1];
-
-        // translation
-
-        translation(sides, false, 2);
-    }
-
-    void rot5() // rotate top clockwise  8
-    {
-        // rotation
-        uint8_t buffer[N];
-        buffer[0] = sides[1][0][0];
-        buffer[1] = sides[1][0][1];
-
-        swap(buffer[0], sides[5][1][1]);
-        swap(buffer[1], sides[5][1][0]);
-
-        swap(buffer[0], sides[3][0][0]);
-        swap(buffer[1], sides[3][0][1]);
-
-        swap(buffer[0], sides[2][0][0]);
-        swap(buffer[1], sides[2][0][1]);
-
-        sides[1][0][0] = buffer[0];
-        sides[1][0][1] = buffer[1];
-
-        // translation clockwise
-        translation(sides, true, 0);
-    }
-
-    void rot5i() // rotate top counterclockwise  9
-    {
-        // rotation
-        uint8_t buffer[N];
-        buffer[0] = sides[1][0][0];
-        buffer[1] = sides[1][0][1];
-
-        swap(buffer[0], sides[2][0][0]);
-        swap(buffer[1], sides[2][0][1]);
-
-        swap(buffer[0], sides[3][0][0]);
-        swap(buffer[1], sides[3][0][1]);
-
-        swap(buffer[0], sides[5][1][1]);
-        swap(buffer[1], sides[5][1][0]);
-
-        sides[1][0][0] = buffer[0];
-        sides[1][0][1] = buffer[1];
-
-        // translation counterclockwise
-        translation(sides, false, 0);
-    }
+    5 is being used, now f and 5= f_l
 
     void rot6() // rotate bottom clockwise  10
     {
@@ -482,6 +475,7 @@ public:
         // translation counterclockwise
         translation(sides, false, 4);
     }
+    */
 
     int random(int min, int max)
     {
@@ -506,7 +500,7 @@ public:
         cout << "[";
         for (int i = 0; i < randomNumber; i++)
         {
-            int move = random(0, 11); // generate a random number between 0 and 11
+            int move = random(0, 5); // generate a random number between 0 and 11
 
             single_rotation(move);
 
@@ -526,11 +520,13 @@ public:
         {
             if (sides[i][0][0] != sides[i][0][1] ||
                 sides[i][0][0] != sides[i][1][0] ||
-                sides[i][0][0] != sides[i][1][1] ||
+                sides[i][0][0] != sides[i][1][1])
+                return false;
+                /*||
                 sides[i][0][1] != sides[i][1][0] ||
                 sides[i][0][1] != sides[i][1][1] ||
-                sides[i][1][0] != sides[i][1][1])
-                return false;
+                sides[i][1][0] != sides[i][1][1]*/
+                // these comparisons are not needed, because if [(A == B) & (A == C)] then (B == C)
         }
 
         return true;
@@ -564,12 +560,14 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     // I need to analyze the state when it is already on pastStates, because that is the final
     // destination of the state, so its address won't change
 
-    int undoLastRot;
-    int parallelRot;
-    oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
-    for (i = 0; i < 12; i++)
+    int undoLastRot = oppos_rot((*processing).front().lastRot);
+    //int parallelRot;
+    // TODO: UNDO oppos parallel, because there are no parallel anymore
+    //oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
+
+    for (i = 0; i < 6; i++)
     {
-        if (i != undoLastRot && i != parallelRot) // avoids making a copy of the previous state and to have the same state buts to the side
+        if (i != undoLastRot /*&& i != parallelRot*/) // avoids making a copy of the previous state and to have the same state buts to the side
         {
             Cube newCube(&((*pastStates).back()), &((*processing).front()), i);
 
@@ -600,9 +598,9 @@ void AI_loop(Cube initial)
         {
             cout << "rot " << i++ << ". To be processed:" << processing.size() << endl;
             if(n==1)
-                n *= 12;
+                n *= 6;
             else
-                n *= 10;
+                n *= 5;
             total += n;
         }
 
@@ -681,6 +679,7 @@ string int_to_string(int x)
     }
 }
 
+/*
 void oppos_parallel_rots(int prevRot, int* oppos, int* parallel)
 {
     switch(prevRot)
@@ -739,6 +738,18 @@ void oppos_parallel_rots(int prevRot, int* oppos, int* parallel)
             return;
     }
 }
+*/
+
+int oppos_rot(int rot)
+{
+    if (rot == -1)
+        return -1;
+
+    if (rot % 2 == 0)
+        return rot + 1;
+
+    return rot - 1;
+}
 
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
 {
@@ -755,6 +766,7 @@ void translation(uint8_t sides[6][N][N], bool isClockwise, int face)
 
 string int_to_rot_name(int n)
 {
+    /*
     switch (n)
     {
     case 0:
@@ -781,6 +793,24 @@ string int_to_rot_name(int n)
         return "U";
     case 11:
         return "U'";
+    default:
+        return "?";
+    }
+    */
+    switch (n)
+    {
+    case 0:
+        return "F";
+    case 1:
+        return "F\'";
+    case 2:
+        return "R";
+    case 3:
+        return "R\'";
+    case 4:
+        return "T";
+    case 5:
+        return "T\'";
     default:
         return "?";
     }
