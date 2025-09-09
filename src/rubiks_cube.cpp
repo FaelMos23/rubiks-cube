@@ -579,38 +579,54 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     return;
 }
 
-void DFS(list<Cube> *processing, list<CubeInfo> *pastStates, int limit)
+void DFS(list<Cube> *processing, stack<int>* nextRots)
 {
     // get top of stack
-    Cube current = processing->back();
-    processing->pop_back();
+    Cube current = processing->front();
 
-    // add to past states
-    CubeInfo newInfo(&current);
-    pastStates->push_front(newInfo);
+    int undoLastRot = oppos_rot(current.lastRot);   // avoids undoing the last rotation
+    
+    // verifies if 3 rotations have been done in a row, because the fourth returns it 
+    int i, rots[3] = {-1, -1, -1};
+    list<Cube>::iterator it = processing->begin();
+    for (i = 0; i < 3; i++)
+    {
+        rots[i] = it->lastRot;
 
-    int undoLastRot = oppos_rot(current.lastRot);
+        if(it == processing->end())
+            break;
+
+        it++;
+    }
+
+    int completeRotation = (rots[0] == rots[1] && rots[0] == rots[2])? rots[0] : -1;    // avoids the cube from doing the same move 3 times in a row
 
     // check depth
-    int depth = 0;
-    CubeInfo *p = &pastStates->front();
-    while (p->prevCube != NULL)
-    {
-        p = p->prevCube;
-        depth++;
-    }
+    int depth = (*processing).size()-1;
+
     // generate children if not at limit
-    if (depth < limit)
+    if (depth <= 14)
     {
-        for (int i = 0; i < 6; i++)
+        while(nextRots->top() < 6)
         {
-            if (i != undoLastRot)
+            if (nextRots->top() != undoLastRot && nextRots->top() != completeRotation)
             {
-                Cube newCube(&pastStates->front(), &current, i);
-                processing->push_back(newCube); // LIFO
+                // past is not necessary because the stack saves the last states
+                Cube newCube(NULL, &(processing->front()), nextRots->top());
+                processing->push_front(newCube); // LIFO
+
+                // prepares the next layer and prepares the current layer if it returns to it
+                nextRots->top()++;
+                nextRots->push(0);
+
+                return;
             }
+            nextRots->top()++;
         }
     }
+    
+    nextRots->pop();
+    processing->pop_front();
 
     return; // se não achou solução neste limite
 }
@@ -620,10 +636,13 @@ void AI_loop(Cube initial)
     // add initial state on structure
     list<CubeInfo> pastStates;
     list<Cube> processing;
+    stack<int> nextRots;
     stack<int> rotations;
     CubeInfo currCube;
     processing.push_back(initial);
     int n = 1, i = 1, total = 1;
+    int choose = 1; // CHOOSING DFS
+    nextRots.push(0);
 
     // while structure is not empty
     while (!processing.empty())
@@ -644,18 +663,34 @@ void AI_loop(Cube initial)
         {
             cout << "Solved! " << endl;
 
-            for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
+            switch(choose)
             {
-                rotations.push(currCube.lastRot);
-            }
+                case 0: // BFS
+                    for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
+                    {
+                        rotations.push(currCube.lastRot);
+                    }
 
-            cout << "[";
-            while (!rotations.empty())
-            {
-                cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
-                rotations.pop();
+                    cout << "[";
+                    while (!rotations.empty())
+                    {
+                        cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
+                        rotations.pop();
+                    }
+                    cout << "]";
+                    break;
+                
+                case 1: // DFS
+                    processing.pop_back();
+                    cout << "[";
+                    while (processing.size() != 0)
+                    {
+                        cout << int_to_rot_name(processing.back().lastRot) << ((processing.size() != 1) ? ", " : "");
+                        processing.pop_back();
+                    }
+                    cout << "]";
+                    break;
             }
-            cout << "]";
 
             return;
         }
@@ -663,7 +698,7 @@ void AI_loop(Cube initial)
         // analysing function()
         // BFS(&processing, &pastStates);
         // breadth first search
-        DFS(&processing, &pastStates, 14);
+        DFS(&processing, &nextRots);
         // depth first search
         // A*
     }
