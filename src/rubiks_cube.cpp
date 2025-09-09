@@ -496,11 +496,21 @@ public:
         // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
 
         int randomNumber = random(10, 20); // change this to change the amount of initial rotations
+        
+        int move = -1;
 
         cout << "[";
         for (int i = 0; i < randomNumber; i++)
         {
-            int move = random(0, 5); // generate a random number between 0 and 11
+            bool wait = true;
+            while(wait)
+            {
+                int new_move = random(0, 5); // generate a random number between 0 and 11
+                if(new_move != oppos_rot(move))
+                    wait = false;
+                
+                move = new_move;
+            }
 
             single_rotation(move);
 
@@ -530,6 +540,20 @@ public:
         }
 
         return true;
+    }
+
+    void worst_case()
+    {
+        // sides[0][0][0] = 2; sides[0][0][1] = 4; sides[0][1][0] = 3; sides[0][1][1] = 5; // TOP
+        // sides[1][0][0] = 5; sides[1][0][1] = 1; sides[1][1][0] = 2; sides[1][1][1] = 4; // LEFT
+        // sides[2][0][0] = 1; sides[2][0][1] = 2; sides[2][1][0] = 0; sides[2][1][1] = 3; // FRONT
+        // sides[3][0][0] = 3; sides[3][0][1] = 0; sides[3][1][0] = 5; sides[3][1][1] = 2; // RIGHT
+        // sides[4][0][0] = 0; sides[4][0][1] = 3; sides[4][1][0] = 4; sides[4][1][1] = 1; // BOTTOM
+        // sides[5][0][0] = 4; sides[5][0][1] = 5; sides[5][1][0] = 1; sides[5][1][1] = 0; // BACK
+        // R T R' T R T T R' F R T R' T' F'
+        r(); t(); r_l(); t(); r(); t(); t(); r_l(); f(); r(); t(); r_l(); t_l(); f_l();
+        
+        return;
     }
 };
 
@@ -596,7 +620,7 @@ void AI_loop(Cube initial)
 
         if (pastStates.size() >= total)
         {
-            cout << "rot " << i++ << ". To be processed:" << processing.size() << endl;
+            cout << "rot " << i++ << ". Closed: " << pastStates.size() << ". Open: " << processing.size() << endl;
             if(n==1)
                 n *= 6;
             else
@@ -643,6 +667,7 @@ int main()
     c.print_cube();
 
     c.shuffle();
+    //c.worst_case();
 
     c.print_cube();
 
