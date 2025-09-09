@@ -16,7 +16,7 @@ const string ORANGE = "\033[38;5;208m";
 const string RESET = "\033[0m";
 
 string int_to_string(int);
-//void oppos_parallel_rots(int, int*, int*);
+// void oppos_parallel_rots(int, int*, int*);
 int oppos_rot(int);
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
 string int_to_rot_name(int);
@@ -321,7 +321,6 @@ public:
         translation(sides, false, 0);
     }
 
-
     /*
     void rot1() // rotate behind clockwise  0
     {
@@ -522,11 +521,11 @@ public:
                 sides[i][0][0] != sides[i][1][0] ||
                 sides[i][0][0] != sides[i][1][1])
                 return false;
-                /*||
-                sides[i][0][1] != sides[i][1][0] ||
-                sides[i][0][1] != sides[i][1][1] ||
-                sides[i][1][0] != sides[i][1][1]*/
-                // these comparisons are not needed, because if [(A == B) & (A == C)] then (B == C)
+            /*||
+            sides[i][0][1] != sides[i][1][0] ||
+            sides[i][0][1] != sides[i][1][1] ||
+            sides[i][1][0] != sides[i][1][1]*/
+            // these comparisons are not needed, because if [(A == B) & (A == C)] then (B == C)
         }
 
         return true;
@@ -561,9 +560,9 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     // destination of the state, so its address won't change
 
     int undoLastRot = oppos_rot((*processing).front().lastRot);
-    //int parallelRot;
-    // TODO: UNDO oppos parallel, because there are no parallel anymore
-    //oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
+    // int parallelRot;
+    //  TODO: UNDO oppos parallel, because there are no parallel anymore
+    // oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
 
     for (i = 0; i < 6; i++)
     {
@@ -578,6 +577,42 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     (*processing).pop_front();
 
     return;
+}
+
+void DFS(list<Cube> *processing, list<CubeInfo> *pastStates, int limit)
+{
+    // get top of stack
+    Cube current = processing->back();
+    processing->pop_back();
+
+    // add to past states
+    CubeInfo newInfo(&current);
+    pastStates->push_front(newInfo);
+
+    int undoLastRot = oppos_rot(current.lastRot);
+
+    // check depth
+    int depth = 0;
+    CubeInfo *p = &pastStates->front();
+    while (p->prevCube != NULL)
+    {
+        p = p->prevCube;
+        depth++;
+    }
+    // generate children if not at limit
+    if (depth < limit)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            if (i != undoLastRot)
+            {
+                Cube newCube(&pastStates->front(), &current, i);
+                processing->push_back(newCube); // LIFO
+            }
+        }
+    }
+
+    return; // se não achou solução neste limite
 }
 
 void AI_loop(Cube initial)
@@ -597,7 +632,7 @@ void AI_loop(Cube initial)
         if (pastStates.size() >= total)
         {
             cout << "rot " << i++ << ". To be processed:" << processing.size() << endl;
-            if(n==1)
+            if (n == 1)
                 n *= 6;
             else
                 n *= 5;
@@ -626,8 +661,9 @@ void AI_loop(Cube initial)
         }
 
         // analysing function()
-        BFS(&processing, &pastStates);
+        // BFS(&processing, &pastStates);
         // breadth first search
+        DFS(&processing, &pastStates, 14);
         // depth first search
         // A*
     }
