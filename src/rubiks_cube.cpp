@@ -579,35 +579,106 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     return;
 }
 
-void DFS(list<Cube> *processing, stack<int>* nextRots)
+// depth limited first search
+bool DLS(list<Cube> *processing, int limit)
 {
     // get top of stack
     Cube current = processing->front();
 
-    int undoLastRot = oppos_rot(current.lastRot);   // avoids undoing the last rotation
-    
-    // verifies if 3 rotations have been done in a row, because the fourth returns it 
+    if (current.is_solved())
+        return true;
+
+    if (limit == 0) // is at limit, doesn't expand more
+        return false;
+
+    int undoLastRot = oppos_rot(current.lastRot);
+
+    // verifies if 3 rotations have been done in a row, because the fourth returns it
+    int i, rots[3] = {-1, -1, -1};
+
+    list<Cube>::iterator it = processing->begin();
+
+    for (i = 0; i < 3; i++)
+    {
+        rots[i] = it->lastRot;
+        if (it == processing->end())
+            break;
+        it++;
+    }
+
+    int completeRotation = (rots[0] == rots[1] && rots[0] == rots[2]) ? rots[0] : -1;
+
+    // tries all rotations
+    for (int rot = 0; rot < 6; rot++)
+    {
+        // if not undoing last rot and not doing the same rot 3 times in a row
+        if (rot != undoLastRot && rot != completeRotation)
+        {
+            // creates child
+            Cube newCube(NULL, &(processing->front()), rot);
+            processing->push_front(newCube); // stack in pile
+
+            if (DLS(processing, limit - 1))
+            {
+                return true; // solution found in this branch
+            }
+
+            // if not found, returns to this state and keeps trying other rotations
+            processing->pop_front();
+        }
+    }
+
+    return false; // no solution found in this branch
+}
+
+bool IDDFS(Cube initial, int maxDepth)
+{
+    // goes through all depths until maxDepth seraching for a optimal solution
+    for (int depth = 0; depth <= maxDepth; depth++)
+    {
+        list<Cube> processing;
+
+        processing.push_back(initial);
+
+        // tries to find a solution at this depth
+        if (DLS(&processing, depth))
+        {
+            cout << "Solved at depth " << depth << endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+/* void DFS(list<Cube> *processing, stack<int> *nextRots)
+{
+    // get top of stack
+    Cube current = processing->front();
+
+    int undoLastRot = oppos_rot(current.lastRot); // avoids undoing the last rotation
+
+    // verifies if 3 rotations have been done in a row, because the fourth returns it
     int i, rots[3] = {-1, -1, -1};
     list<Cube>::iterator it = processing->begin();
     for (i = 0; i < 3; i++)
     {
         rots[i] = it->lastRot;
 
-        if(it == processing->end())
+        if (it == processing->end())
             break;
 
         it++;
     }
 
-    int completeRotation = (rots[0] == rots[1] && rots[0] == rots[2])? rots[0] : -1;    // avoids the cube from doing the same move 3 times in a row
+    int completeRotation = (rots[0] == rots[1] && rots[0] == rots[2]) ? rots[0] : -1; // avoids the cube from doing the same move 3 times in a row
 
     // check depth
-    int depth = (*processing).size()-1;
+    int depth = (*processing).size() - 1;
 
     // generate children if not at limit
     if (depth <= 14)
     {
-        while(nextRots->top() < 6)
+        while (nextRots->top() < 6)
         {
             if (nextRots->top() != undoLastRot && nextRots->top() != completeRotation)
             {
@@ -624,12 +695,12 @@ void DFS(list<Cube> *processing, stack<int>* nextRots)
             nextRots->top()++;
         }
     }
-    
+
     nextRots->pop();
     processing->pop_front();
 
     return; // se não achou solução neste limite
-}
+} */
 
 void AI_loop(Cube initial)
 {
@@ -663,33 +734,33 @@ void AI_loop(Cube initial)
         {
             cout << "Solved! " << endl;
 
-            switch(choose)
+            switch (choose)
             {
-                case 0: // BFS
-                    for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
-                    {
-                        rotations.push(currCube.lastRot);
-                    }
+            case 0: // BFS
+                for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
+                {
+                    rotations.push(currCube.lastRot);
+                }
 
-                    cout << "[";
-                    while (!rotations.empty())
-                    {
-                        cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
-                        rotations.pop();
-                    }
-                    cout << "]";
-                    break;
-                
-                case 1: // DFS
+                cout << "[";
+                while (!rotations.empty())
+                {
+                    cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
+                    rotations.pop();
+                }
+                cout << "]";
+                break;
+
+            case 1: // DFS
+                processing.pop_back();
+                cout << "[";
+                while (processing.size() != 0)
+                {
+                    cout << int_to_rot_name(processing.back().lastRot) << ((processing.size() != 1) ? ", " : "");
                     processing.pop_back();
-                    cout << "[";
-                    while (processing.size() != 0)
-                    {
-                        cout << int_to_rot_name(processing.back().lastRot) << ((processing.size() != 1) ? ", " : "");
-                        processing.pop_back();
-                    }
-                    cout << "]";
-                    break;
+                }
+                cout << "]";
+                break;
             }
 
             return;
@@ -698,8 +769,13 @@ void AI_loop(Cube initial)
         // analysing function()
         // BFS(&processing, &pastStates);
         // breadth first search
-        DFS(&processing, &nextRots);
+        // DFS(&processing, &nextRots);
         // depth first search
+        if (IDDFS(processing.front(), 14))
+        {
+            return; // stops while here otherwise it would keep going
+        }
+        // iterative deepening depth first search
         // A*
     }
 
