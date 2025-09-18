@@ -21,38 +21,12 @@ int oppos_rot(int);
 void translation(uint8_t sides[6][N][N], bool isClockwise, int face);
 string int_to_rot_name(int);
 
-class Cube;
-
-class CubeInfo
-{
-public:
-    CubeInfo *prevCube;
-    uint8_t lastRot;
-
-    // constructors
-    CubeInfo()
-    {
-        prevCube = NULL; // this is the first cube
-        lastRot = -1;    // there was no rotation to get here
-    }
-
-    CubeInfo(Cube *prev);
-
-    void copyInfo(CubeInfo original)
-    {
-        prevCube = original.prevCube;
-        lastRot = original.lastRot;
-    }
-
-    void copyFromCube(Cube original);
-};
-
 class Cube
 {
 public:
     // attr
     uint8_t sides[6][N][N];
-    CubeInfo *prevCube;
+    Cube *prevCube;
     uint8_t lastRot;
 
     // constructors
@@ -133,7 +107,7 @@ public:
     //    lastRot = rot;   // saves the last rotation
     //}
 
-    Cube(CubeInfo *past, Cube *processing, int rot)
+    Cube(Cube *past, Cube *current, int rot)
     {
         int i, j, k;
 
@@ -141,7 +115,7 @@ public:
             for (j = 0; j < N; j++)
                 for (k = 0; k < N; k++)
                 {
-                    sides[i][j][k] = (*processing).sides[i][j][k];
+                    sides[i][j][k] = (*current).sides[i][j][k];
                 }
 
         single_rotation(rot);
@@ -495,7 +469,7 @@ public:
     {
         // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
 
-        int randomNumber = random(10, 20); // change this to change the amount of initial rotations
+        int randomNumber = 8;//random(10, 20); // change this to change the amount of initial rotations
         
         int move = -1;
 
@@ -555,28 +529,48 @@ public:
         
         return;
     }
+
+    bool isEqualTo(Cube comp)
+    {
+        int i, j, k;
+
+        for (i = 0; i < 6; i++)
+            for (j = 0; j < N; j++)
+                for (k = 0; k < N; k++)
+                    if(sides[i][j][k] != comp.sides[i][j][k])
+                        return false;
+        
+        return true;
+    }
+
+    void copy(Cube original)
+    {
+        int i, j, k;
+
+        for (i = 0; i < 6; i++)
+            for (j = 0; j < N; j++)
+                for (k = 0; k < N; k++)
+                {
+                    sides[i][j][k] = original.sides[i][j][k];
+                }
+
+        prevCube = original.prevCube;
+        lastRot = original.lastRot;
+    }
 };
 
-// these are part of CubeInfo but because of circular dependency it is being defined here, after Cube
-CubeInfo::CubeInfo(Cube *prev)
-{
-    prevCube = prev->prevCube;
-    lastRot = prev->lastRot;
-}
+bool isOnQueue(Cube, list<Cube>*);
+void librarian_store(list<Cube>* Shelves, Cube book);
+int librarian_id(Cube);
 
-void CubeInfo::copyFromCube(Cube original)
-{
-    prevCube = original.prevCube;
-    lastRot = original.lastRot;
-}
-
-void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
+void BFS(list<Cube> *processing, list<Cube> *pastStates)
 {
     int i;
 
-    CubeInfo newInfo(&((*processing).front()));
+    Cube newInfo(((*processing).front()));
 
-    (*pastStates).push_back(newInfo);
+    librarian_store(pastStates, newInfo);
+    int id = librarian_id(newInfo);
     // used to read every entry and its contents
     // cout << &(*pastStates).back() << ": prevCube- " << (*pastStates).back().prevCube << ", lastRot- " << int_to_rot_name((*pastStates).back().lastRot) << endl;
 
@@ -585,17 +579,19 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
     // destination of the state, so its address won't change
 
     int undoLastRot = oppos_rot((*processing).front().lastRot);
+    bool alreadyExists;
     //int parallelRot;
     // TODO: UNDO oppos parallel, because there are no parallel anymore
     //oppos_parallel_rots((*processing).front().lastRot, &undoLastRot, &parallelRot);
 
     for (i = 0; i < 6; i++)
     {
-        if (i != undoLastRot /*&& i != parallelRot*/) // avoids making a copy of the previous state and to have the same state buts to the side
+        if (i != undoLastRot) // avoids making a copy of the previous state
         {
-            Cube newCube(&((*pastStates).back()), &((*processing).front()), i);
+            Cube newCube(&((*(pastStates+id)).back()), &((*processing).front()), i);
 
-            (*processing).push_back(newCube);
+            if(!isOnQueue(newCube, pastStates))
+                (*processing).push_back(newCube);
         }
     }
 
@@ -607,33 +603,35 @@ void BFS(list<Cube> *processing, list<CubeInfo> *pastStates)
 void AI_loop(Cube initial)
 {
     // add initial state on structure
-    list<CubeInfo> pastStates;
+    list<Cube> pastStates[216];
+    // why 216 lists?
+    
+    // we are separating the lists so that the search is quicker everytime, because the iteration through the lists is what was taking most of the time
+    // to classify in which list each closed state is going, we are verifying their 3 first values
+    // [0][0][0]  [0][0][1]
+    // [0][1][0]
+    // for each possible value these elements have (0-5 * 3 = 216), we push into a different list, which is easily iterable to find out if the current state already exists
+
+    // we are saving time but USING MORE MEMORY, how much more memory?
+    
+    // worst case before: (1 list = 24B) + (3.674.160* cubes of 40B). TOTAL = 146.966.424B = 146,966MB
+    // worst case now: (216 lists of 24B) + (3.674.160* cubes of 40B). TOTAL = 146.971.584B = 146,967MB
+
+
     list<Cube> processing;
     stack<int> rotations;
-    CubeInfo currCube;
+    Cube currCube;
     processing.push_back(initial);
-    int n = 1, i = 1, total = 1;
 
     // while structure is not empty
     while (!processing.empty())
     {
-
-        if (pastStates.size() >= total)
-        {
-            cout << "rot " << i++ << ". Closed: " << pastStates.size() << ". Open: " << processing.size() << endl;
-            if(n==1)
-                n *= 6;
-            else
-                n *= 5;
-            total += n;
-        }
-
         // if (solved state)
         if ((processing.front()).is_solved())
         {
             cout << "Solved! " << endl;
 
-            for (currCube.copyFromCube(processing.front()); currCube.prevCube != NULL; currCube.copyInfo(*currCube.prevCube))
+            for (currCube.copy(processing.front()); currCube.prevCube != NULL; currCube.copy(*currCube.prevCube))
             {
                 rotations.push(currCube.lastRot);
             }
@@ -650,7 +648,7 @@ void AI_loop(Cube initial)
         }
 
         // analysing function()
-        BFS(&processing, &pastStates);
+        BFS(&processing, &(pastStates[0]));
         // breadth first search
         // depth first search
         // A*
@@ -839,4 +837,63 @@ string int_to_rot_name(int n)
     default:
         return "?";
     }
+}
+
+bool isOnQueue(Cube newCube, list<Cube>* pastStates)
+{
+    int i,k,j;
+    list<Cube>::iterator it;
+    bool result;
+    int id = librarian_id(newCube);
+
+    for (it = (*(pastStates+id)).begin(); it != (*(pastStates+id)).end(); it++)
+    {
+        if(newCube.isEqualTo(*it))
+            return true;
+
+        // B'F
+        std::swap(newCube.sides[0][0][0], newCube.sides[3][0][1]);
+        std::swap(newCube.sides[0][0][0], newCube.sides[4][1][1]);
+        std::swap(newCube.sides[0][0][0], newCube.sides[1][1][0]);
+
+        std::swap(newCube.sides[0][0][0], newCube.sides[3][1][1]);
+        std::swap(newCube.sides[0][0][0], newCube.sides[4][1][0]);
+        std::swap(newCube.sides[0][0][1], newCube.sides[1][0][0]);
+
+        translation(newCube.sides, false, 5);
+        newCube.f();
+
+        if(newCube.isEqualTo(*it))
+            return true;
+
+        // U'T
+        std::swap(newCube.sides[1][1][0], newCube.sides[5][0][1]);
+        std::swap(newCube.sides[1][1][0], newCube.sides[3][1][0]);
+        std::swap(newCube.sides[1][1][0], newCube.sides[2][1][0]);
+
+        std::swap(newCube.sides[1][1][1], newCube.sides[5][0][0]);
+        std::swap(newCube.sides[1][1][1], newCube.sides[3][1][1]);
+        std::swap(newCube.sides[1][1][1], newCube.sides[2][1][1]);
+
+        translation(newCube.sides, false, 4);
+        newCube.t();
+
+        if(newCube.isEqualTo(*it))
+            return true;
+    }
+
+    return false;
+}
+
+void librarian_store(list<Cube>* Shelves, Cube book)
+{
+    // choosing the correct shelf out of 216
+    int id = book.sides[0][0][0]*36 + book.sides[0][0][1]*6 + book.sides[0][1][0];
+
+    (*(Shelves + id)).push_back(book);
+}
+
+int librarian_id(Cube book)
+{
+    return book.sides[0][0][0]*36 + book.sides[0][0][1]*6 + book.sides[0][1][0];
 }
