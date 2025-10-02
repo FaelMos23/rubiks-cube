@@ -11,7 +11,7 @@ unsigned int bases6to2(long long);
 
 int main(int argc, char* argv[])
 {
-    /*  just done once, use it to erase all costs
+    /*
         std::fstream file("knowledge.bin", std::ios::binary | std::ios::out);
         if (!file.is_open()) {
             std::cerr << "Error: Unable to open file!" << std::endl;
@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
             file.write(reinterpret_cast<const char*>(&NONE), 1);
 
         file.close();
-    }
+    
+    return 0;
     */
 
     // used to rewrite the costs to each state
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
     loop
         solve the cube
         get the cube id,do the shift verification
-        rewrite the amount of moves needed to solve on knowledge[id]
+        rewrite the amount of moves needed to solve on knowledge[id] ////IF lower than the current value
         next cube possibility
     */
 
@@ -43,7 +44,7 @@ int main(int argc, char* argv[])
 
     Cube c;
     std::stack<Cube> cubes;
-    std::stack<int> rots;   rots.push(0);
+    std::stack<int> rots;   rots.push(5);
     uint8_t currValue;
     int currID;
     long long processed = 0;  // for test  
@@ -94,9 +95,9 @@ int main(int argc, char* argv[])
         load.close();
     }
 
-    while(processed < 50000 && !rots.empty())      // I chose to break in groups of 5.000.000.000, 
+    while(processed < 500 && !rots.empty())      // I chose to break in groups of 5.000.000.000, 
     {                                                   // so I just need to run it ~(7.2) 8 times :(
-        currValue = AI_loop(cubes.top(), RUN_DFS);
+        currValue = AI_loop(cubes.top(), RUN_DFS,false);
         currID = cube2id(cubes.top()) - LOW_CUBE;
 
         
@@ -106,9 +107,18 @@ int main(int argc, char* argv[])
             return 1;
         }
 
+        uint8_t compare;
+
         // Jump to the IDth byte
-        replace.seekp(currID, std::ios::beg);
-        replace.write(reinterpret_cast<const char*>(&currValue), 1);
+        replace.seekg(currID, std::ios::beg);
+        replace.read(reinterpret_cast<char*>(&compare), 1);
+
+        if(currValue < compare)
+        {
+            replace.seekp(currID, std::ios::beg);
+            replace.write(reinterpret_cast<const char*>(&currValue), 1);
+        }
+
 
         replace.close();
 

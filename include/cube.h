@@ -614,6 +614,37 @@ public:
         cout << "]" << endl;
     }
 
+    void shuffle_BFS()
+    {
+        // int randomNumber = rand() % 11 + 10; // generate a random number between 10 and 20
+
+        int randomNumber = 10;    //random(10, 20); // change this to change the amount of initial rotations
+        
+        int move = -1;
+
+        cout << "[";
+        for (int i = 0; i < randomNumber; i++)
+        {
+            bool wait = true;
+            while(wait)
+            {
+                int new_move = random(0, 5); // generate a random number between 0 and 11
+                if(new_move != oppos_rot(move))
+                    wait = false;
+                
+                move = new_move;
+            }
+
+            single_rotation(move);
+
+            cout << int_to_rot_name(move) << (i == randomNumber - 1 ? "" : ", ");
+            // for printing each step
+            // cout << "\n" << endl;
+            // print_cube();
+        }
+        cout << "]" << endl;
+    }
+
     bool is_solved()
     {
         int i, j, k;
@@ -632,6 +663,28 @@ public:
         }
 
         return true;
+    }
+
+    void demo()
+    {
+        int i, j, k;
+
+        for (i = 0; i < 6; i++)
+            for (j = 0; j < N; j++)
+                for (k = 0; k < N; k++)
+                    sides[i][j][k] = i;
+
+        
+        single_rotation(5);
+        single_rotation(0);
+        single_rotation(4);
+        single_rotation(3);
+        single_rotation(0);
+        single_rotation(3);
+        single_rotation(5);
+        single_rotation(2);
+        single_rotation(4);
+        single_rotation(1);
     }
 };
 
@@ -833,26 +886,29 @@ inline void Astar(list<Cube>* processing)
     if(costs[0] == 15 && costs[0] == costs[1] && costs[0] == costs[2] && costs[0] == costs[3] && costs[0] == costs[4] && costs[0] == costs[5])
     {
         cout << "Not known\n";
+        processing->pop_front();
         return;
     }
 
-    if(costs[0] <= costs[1] && costs[0] <= costs[2] && costs[0] <= costs[3] && costs[0] <= costs[4] && costs[0] <= costs[5])
+    cout << (int) costs[0] << " " << (int) costs[1] << " " << (int) costs[2] << " " << (int) costs[3] << " " << (int) costs[4] << " " << (int) costs[5] << endl;
+
+    if(processing->front().lastRot != 1 && costs[0] <= costs[1] && costs[0] <= costs[2] && costs[0] <= costs[3] && costs[0] <= costs[4] && costs[0] <= costs[5])
         processing->push_front(possible0);
     else
     {
-        if(costs[1] <= costs[2] && costs[1] <= costs[3] && costs[1] <= costs[4] && costs[1] <= costs[5])
+        if(processing->front().lastRot != 0 && costs[1] <= costs[2] && costs[1] <= costs[3] && costs[1] <= costs[4] && costs[1] <= costs[5])
             processing->push_front(possible1);
         else
         {
-            if(costs[2] <= costs[3] && costs[2] <= costs[4] && costs[2] <= costs[5])
+            if(processing->front().lastRot != 3 && costs[2] <= costs[3] && costs[2] <= costs[4] && costs[2] <= costs[5])
                 processing->push_front(possible2);
             else
             {
-                if(costs[3] <= costs[4] && costs[3] <= costs[5])
+                if(processing->front().lastRot != 2 && costs[3] <= costs[4] && costs[3] <= costs[5])
                     processing->push_front(possible3);
                 else
                 {
-                    if(costs[4] <= costs[5])
+                    if(processing->front().lastRot != 5 && costs[4] <= costs[5])
                         processing->push_front(possible4);
                     else
                         processing->push_front(possible5);
@@ -862,7 +918,7 @@ inline void Astar(list<Cube>* processing)
     }
 }
 
-inline uint8_t AI_loop(Cube initial, int choose)
+inline uint8_t AI_loop(Cube initial, int choose, bool showStates)
 {
     // add initial state on structure
     list<CubeInfo> pastStates;
@@ -871,7 +927,6 @@ inline uint8_t AI_loop(Cube initial, int choose)
     stack<int> rotations;
     CubeInfo currCube;
     processing.push_back(initial);
-    int n = 1, i = 1, total = 1;
     nextRots.push(0);
     int currLimit = 1;
     
@@ -882,20 +937,13 @@ inline uint8_t AI_loop(Cube initial, int choose)
     while (!processing.empty())
     {
 
-        if (pastStates.size() >= total)
-        {
-            cout << "rot " << i++ << ". To be processed:" << processing.size() << endl;
-            if (n == 1)
-                n *= 6;
-            else
-                n *= 5;
-            total += n;
-        }
-
         // if (solved state)
         if ((processing.front()).is_solved())
         {
-            cout << "Solved! - " ;
+            Cube printCube(initial);
+            stack<int> rotations2;
+            list<Cube> processing2;
+            cout << "Solved! - ";
 
             switch (choose)
             {
@@ -910,9 +958,18 @@ inline uint8_t AI_loop(Cube initial, int choose)
                 while (!rotations.empty())
                 {
                     cout << int_to_rot_name(rotations.top()) << ((rotations.size() != 1) ? ", " : "");
+                    rotations2.push(rotations.top());
                     rotations.pop();
                 }
                 cout << "]\n";
+                
+                if(showStates)
+                    while (!rotations2.empty())
+                    {
+                        printCube.single_rotation(rotations2.top());
+                        printCube.print_cube();
+                        rotations2.pop();
+                    }
                 break;
 
             case RUN_DFS:
@@ -923,9 +980,17 @@ inline uint8_t AI_loop(Cube initial, int choose)
                 while (!processing.empty())
                 {
                     cout << int_to_rot_name(processing.back().lastRot) << ((processing.size() != 1) ? ", " : "");
+                    processing2.push_front(processing.back());
                     processing.pop_back();
                 }
                 cout << "]\n";
+
+                if(showStates)
+                    while (!processing2.empty())
+                    {
+                        processing2.back().print_cube();
+                        processing2.pop_back();
+                    }
                 break;
                 
             case RUN_Astar:
@@ -936,9 +1001,17 @@ inline uint8_t AI_loop(Cube initial, int choose)
                 while (!processing.empty())
                 {
                     cout << int_to_rot_name(processing.back().lastRot) << ((processing.size() != 1) ? ", " : "");
+                    processing2.push_front(processing.back());
                     processing.pop_back();
                 }
                 cout << "]\n";
+
+                if(showStates)
+                    while (!processing2.empty())
+                    {
+                        processing2.back().print_cube();
+                        processing2.pop_back();
+                    }
                 break;
             }
 
