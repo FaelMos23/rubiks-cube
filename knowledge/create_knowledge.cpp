@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
         load.close();
     }
 
-    while(processed < 500 && !rots.empty())      // I chose to break in groups of 5.000.000.000, 
+    while(processed < 10000 && !rots.empty())      // I chose to break in groups of 5.000.000.000, 
     {                                                   // so I just need to run it ~(7.2) 8 times :(
         currValue = AI_loop(cubes.top(), RUN_DFS,false);
         currID = cube2id(cubes.top()) - LOW_CUBE;

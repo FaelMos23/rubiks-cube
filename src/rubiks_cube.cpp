@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
             method = RUN_DFS;
             break;
         default:
-            std::cout << "Doing default: DFS showing states" << std::endl;
+            std::cout << "Doing default: DFS showing states\n\nHow to run (between < and > means optional): \'./bin/rubiks_cube.exe <B/D/A/d S/s>\'\nEx1.:\'./bin/rubiks_cube.exe B S\' runs the code solving with BFS, showing each state of resolution\nEx2.:\'./bin/rubiks_cube.exe d\' runs the demo code solving with A_star, NOT showing each state of resolution\n";
             c.shuffle();
             method = RUN_DFS;
             break;
